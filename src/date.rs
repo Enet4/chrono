@@ -10,8 +10,8 @@ use oldtime::Duration as OldDuration;
 
 use {Weekday, Datelike};
 use offset::{TimeZone, Utc};
-use naive::{self, NaiveDate, NaiveTime, IsoWeek};
-use DateTime;
+use naive::{self, NaiveDate, IsoWeek};
+use {DateTime, Time};
 use format::{Item, DelayedFormat, StrftimeItems};
 
 /// ISO 8601 calendar date with time zone.
@@ -59,12 +59,12 @@ impl<Tz: TimeZone> Date<Tz> {
         Date { date: date, offset: offset }
     }
 
-    /// Makes a new `DateTime` from the current date and given `NaiveTime`.
+    /// Makes a new `DateTime` from the current date and given `Time`.
     /// The offset in the current date is preserved.
     ///
     /// Panics on invalid datetime.
     #[inline]
-    pub fn and_time(&self, time: NaiveTime) -> Option<DateTime<Tz>> {
+    pub fn and_time(&self, time: Time) -> Option<DateTime<Tz>> {
         let localdt = self.naive_local().and_time(time);
         self.timezone().from_local_datetime(&localdt).single()
     }
@@ -84,7 +84,7 @@ impl<Tz: TimeZone> Date<Tz> {
     /// Returns `None` on invalid hour, minute and/or second.
     #[inline]
     pub fn and_hms_opt(&self, hour: u32, min: u32, sec: u32) -> Option<DateTime<Tz>> {
-        NaiveTime::from_hms_opt(hour, min, sec).and_then(|time| self.and_time(time))
+        Time::from_hms_opt(hour, min, sec).and_then(|time| self.and_time(time))
     }
 
     /// Makes a new `DateTime` from the current date, hour, minute, second and millisecond.
@@ -105,7 +105,7 @@ impl<Tz: TimeZone> Date<Tz> {
     #[inline]
     pub fn and_hms_milli_opt(&self, hour: u32, min: u32, sec: u32,
                              milli: u32) -> Option<DateTime<Tz>> {
-        NaiveTime::from_hms_milli_opt(hour, min, sec, milli).and_then(|time| self.and_time(time))
+        Time::from_hms_milli_opt(hour, min, sec, milli).and_then(|time| self.and_time(time))
     }
 
     /// Makes a new `DateTime` from the current date, hour, minute, second and microsecond.
@@ -126,7 +126,7 @@ impl<Tz: TimeZone> Date<Tz> {
     #[inline]
     pub fn and_hms_micro_opt(&self, hour: u32, min: u32, sec: u32,
                              micro: u32) -> Option<DateTime<Tz>> {
-        NaiveTime::from_hms_micro_opt(hour, min, sec, micro).and_then(|time| self.and_time(time))
+        Time::from_hms_micro_opt(hour, min, sec, micro).and_then(|time| self.and_time(time))
     }
 
     /// Makes a new `DateTime` from the current date, hour, minute, second and nanosecond.
@@ -147,7 +147,7 @@ impl<Tz: TimeZone> Date<Tz> {
     #[inline]
     pub fn and_hms_nano_opt(&self, hour: u32, min: u32, sec: u32,
                             nano: u32) -> Option<DateTime<Tz>> {
-        NaiveTime::from_hms_nano_opt(hour, min, sec, nano).and_then(|time| self.and_time(time))
+        Time::from_hms_nano_opt(hour, min, sec, nano).and_then(|time| self.and_time(time))
     }
 
     /// Makes a new `Date` for the next date.

@@ -8,9 +8,9 @@ use std::ops::{Add, Sub, AddAssign, SubAssign};
 use num_traits::ToPrimitive;
 use oldtime::Duration as OldDuration;
 
-use {Weekday, Timelike, Datelike};
+use {Weekday, Time, Timelike, Datelike};
 use div::div_mod_floor;
-use naive::{NaiveTime, NaiveDate, IsoWeek};
+use naive::{NaiveDate, IsoWeek};
 use format::{Item, Numeric, Pad, Fixed};
 use format::{parse, Parsed, ParseError, ParseResult, DelayedFormat, StrftimeItems};
 
@@ -50,7 +50,7 @@ const MAX_SECS_BITS: usize = 44;
 #[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone)]
 pub struct NaiveDateTime {
     date: NaiveDate,
-    time: NaiveTime,
+    time: Time,
 }
 
 impl NaiveDateTime {
@@ -61,17 +61,17 @@ impl NaiveDateTime {
     /// # Example
     ///
     /// ~~~~
-    /// use chrono::{NaiveDate, NaiveTime, NaiveDateTime};
+    /// use chrono::{NaiveDate, Time, NaiveDateTime};
     ///
     /// let d = NaiveDate::from_ymd(2015, 6, 3);
-    /// let t = NaiveTime::from_hms_milli(12, 34, 56, 789);
+    /// let t = Time::from_hms_milli(12, 34, 56, 789);
     ///
     /// let dt = NaiveDateTime::new(d, t);
     /// assert_eq!(dt.date(), d);
     /// assert_eq!(dt.time(), t);
     /// ~~~~
     #[inline]
-    pub fn new(date: NaiveDate, time: NaiveTime) -> NaiveDateTime {
+    pub fn new(date: NaiveDate, time: Time) -> NaiveDateTime {
         NaiveDateTime { date: date, time: time }
     }
 
@@ -84,7 +84,7 @@ impl NaiveDateTime {
     /// [`TimeZone::timestamp`](../offset/trait.TimeZone.html#method.timestamp).
     ///
     /// The nanosecond part can exceed 1,000,000,000 in order to represent the
-    /// [leap second](./struct.NaiveTime.html#leap-second-handling). (The true "UNIX
+    /// [leap second](./struct.Time.html#leap-second-handling). (The true "UNIX
     /// timestamp" cannot represent a leap second unambiguously.)
     ///
     /// Panics on the out-of-range number of seconds and/or invalid nanosecond.
@@ -112,7 +112,7 @@ impl NaiveDateTime {
     /// and the number of nanoseconds since the last whole non-leap second.
     ///
     /// The nanosecond part can exceed 1,000,000,000
-    /// in order to represent the [leap second](./struct.NaiveTime.html#leap-second-handling).
+    /// in order to represent the [leap second](./struct.Time.html#leap-second-handling).
     /// (The true "UNIX timestamp" cannot represent a leap second unambiguously.)
     ///
     /// Returns `None` on the out-of-range number of seconds and/or invalid nanosecond.
@@ -136,7 +136,7 @@ impl NaiveDateTime {
         let (days, secs) = div_mod_floor(secs, 86_400);
         let date = days.to_i32().and_then(|days| days.checked_add(719_163))
                                 .and_then(NaiveDate::from_num_days_from_ce_opt);
-        let time = NaiveTime::from_num_seconds_from_midnight_opt(secs as u32, nsecs);
+        let time = Time::from_num_seconds_from_midnight_opt(secs as u32, nsecs);
         match (date, time) {
             (Some(date), Some(time)) => Some(NaiveDateTime { date: date, time: time }),
             (_, _) => None,
@@ -169,7 +169,7 @@ impl NaiveDateTime {
     ///            Ok(NaiveDate::from_ymd(2014, 5, 17).and_hms(12, 34, 56)));
     /// ~~~~
     ///
-    /// [Leap seconds](./struct.NaiveTime.html#leap-second-handling) are correctly handled by
+    /// [Leap seconds](./struct.Time.html#leap-second-handling) are correctly handled by
     /// treating any time of the form `hh:mm:60` as a leap second.
     /// (This equally applies to the formatting, so the round trip is possible.)
     ///
@@ -230,13 +230,13 @@ impl NaiveDateTime {
     /// # Example
     ///
     /// ~~~~
-    /// use chrono::{NaiveDate, NaiveTime};
+    /// use chrono::{NaiveDate, Time};
     ///
     /// let dt = NaiveDate::from_ymd(2016, 7, 8).and_hms(9, 10, 11);
-    /// assert_eq!(dt.time(), NaiveTime::from_hms(9, 10, 11));
+    /// assert_eq!(dt.time(), Time::from_hms(9, 10, 11));
     /// ~~~~
     #[inline]
-    pub fn time(&self) -> NaiveTime {
+    pub fn time(&self) -> Time {
         self.time
     }
 
@@ -293,7 +293,7 @@ impl NaiveDateTime {
     /// Returns the number of milliseconds since the last whole non-leap second.
     ///
     /// The return value ranges from 0 to 999,
-    /// or for [leap seconds](./struct.NaiveTime.html#leap-second-handling), to 1,999.
+    /// or for [leap seconds](./struct.Time.html#leap-second-handling), to 1,999.
     ///
     /// # Example
     ///
@@ -314,7 +314,7 @@ impl NaiveDateTime {
     /// Returns the number of microseconds since the last whole non-leap second.
     ///
     /// The return value ranges from 0 to 999,999,
-    /// or for [leap seconds](./struct.NaiveTime.html#leap-second-handling), to 1,999,999.
+    /// or for [leap seconds](./struct.Time.html#leap-second-handling), to 1,999,999.
     ///
     /// # Example
     ///
@@ -335,7 +335,7 @@ impl NaiveDateTime {
     /// Returns the number of nanoseconds since the last whole non-leap second.
     ///
     /// The return value ranges from 0 to 999,999,999,
-    /// or for [leap seconds](./struct.NaiveTime.html#leap-second-handling), to 1,999,999,999.
+    /// or for [leap seconds](./struct.Time.html#leap-second-handling), to 1,999,999,999.
     ///
     /// # Example
     ///
@@ -355,7 +355,7 @@ impl NaiveDateTime {
 
     /// Adds given `Duration` to the current date and time.
     ///
-    /// As a part of Chrono's [leap second handling](./struct.NaiveTime.html#leap-second-handling),
+    /// As a part of Chrono's [leap second handling](./struct.Time.html#leap-second-handling),
     /// the addition assumes that **there is no leap second ever**,
     /// except when the `NaiveDateTime` itself represents a leap second
     /// in which case the assumption becomes that **there is exactly a single leap second ever**.
@@ -441,7 +441,7 @@ impl NaiveDateTime {
 
     /// Subtracts given `Duration` from the current date and time.
     ///
-    /// As a part of Chrono's [leap second handling](./struct.NaiveTime.html#leap-second-handling),
+    /// As a part of Chrono's [leap second handling](./struct.Time.html#leap-second-handling),
     /// the subtraction assumes that **there is no leap second ever**,
     /// except when the `NaiveDateTime` itself represents a leap second
     /// in which case the assumption becomes that **there is exactly a single leap second ever**.
@@ -524,7 +524,7 @@ impl NaiveDateTime {
     /// Subtracts another `NaiveDateTime` from the current date and time.
     /// This does not overflow or underflow at all.
     ///
-    /// As a part of Chrono's [leap second handling](./struct.NaiveTime.html#leap-second-handling),
+    /// As a part of Chrono's [leap second handling](./struct.Time.html#leap-second-handling),
     /// the subtraction assumes that **there is no leap second ever**,
     /// except when any of the `NaiveDateTime`s themselves represents a leap second
     /// in which case the assumption becomes that
@@ -961,7 +961,7 @@ impl Datelike for NaiveDateTime {
 impl Timelike for NaiveDateTime {
     /// Returns the hour number from 0 to 23.
     ///
-    /// See also the [`NaiveTime::hour`](./struct.NaiveTime.html#method.hour) method.
+    /// See also the [`Time::hour`](./struct.Time.html#method.hour) method.
     ///
     /// # Example
     ///
@@ -978,7 +978,7 @@ impl Timelike for NaiveDateTime {
 
     /// Returns the minute number from 0 to 59.
     ///
-    /// See also the [`NaiveTime::minute`](./struct.NaiveTime.html#method.minute) method.
+    /// See also the [`Time::minute`](./struct.Time.html#method.minute) method.
     ///
     /// # Example
     ///
@@ -995,7 +995,7 @@ impl Timelike for NaiveDateTime {
 
     /// Returns the second number from 0 to 59.
     ///
-    /// See also the [`NaiveTime::second`](./struct.NaiveTime.html#method.second) method.
+    /// See also the [`Time::second`](./struct.Time.html#method.second) method.
     ///
     /// # Example
     ///
@@ -1012,10 +1012,10 @@ impl Timelike for NaiveDateTime {
 
     /// Returns the number of nanoseconds since the whole non-leap second.
     /// The range from 1,000,000,000 to 1,999,999,999 represents
-    /// the [leap second](./struct.NaiveTime.html#leap-second-handling).
+    /// the [leap second](./struct.Time.html#leap-second-handling).
     ///
     /// See also the
-    /// [`NaiveTime::nanosecond`](./struct.NaiveTime.html#method.nanosecond) method.
+    /// [`Time::nanosecond`](./struct.Time.html#method.nanosecond) method.
     ///
     /// # Example
     ///
@@ -1035,7 +1035,7 @@ impl Timelike for NaiveDateTime {
     /// Returns `None` when the resulting `NaiveDateTime` would be invalid.
     ///
     /// See also the
-    /// [`NaiveTime::with_hour`](./struct.NaiveTime.html#method.with_hour) method.
+    /// [`Time::with_hour`](./struct.Time.html#method.with_hour) method.
     ///
     /// # Example
     ///
@@ -1057,7 +1057,7 @@ impl Timelike for NaiveDateTime {
     /// Returns `None` when the resulting `NaiveDateTime` would be invalid.
     ///
     /// See also the
-    /// [`NaiveTime::with_minute`](./struct.NaiveTime.html#method.with_minute) method.
+    /// [`Time::with_minute`](./struct.Time.html#method.with_minute) method.
     ///
     /// # Example
     ///
@@ -1081,7 +1081,7 @@ impl Timelike for NaiveDateTime {
     /// the input range is restricted to 0 through 59.
     ///
     /// See also the
-    /// [`NaiveTime::with_second`](./struct.NaiveTime.html#method.with_second) method.
+    /// [`Time::with_second`](./struct.Time.html#method.with_second) method.
     ///
     /// # Example
     ///
@@ -1105,7 +1105,7 @@ impl Timelike for NaiveDateTime {
     /// the input range can exceed 1,000,000,000 for leap seconds.
     ///
     /// See also the
-    /// [`NaiveTime::with_nanosecond`](./struct.NaiveTime.html#method.with_nanosecond)
+    /// [`Time::with_nanosecond`](./struct.Time.html#method.with_nanosecond)
     /// method.
     ///
     /// # Example
@@ -1140,7 +1140,7 @@ impl hash::Hash for NaiveDateTime {
 
 /// An addition of `Duration` to `NaiveDateTime` yields another `NaiveDateTime`.
 ///
-/// As a part of Chrono's [leap second handling](./struct.NaiveTime.html#leap-second-handling),
+/// As a part of Chrono's [leap second handling](./struct.Time.html#leap-second-handling),
 /// the addition assumes that **there is no leap second ever**,
 /// except when the `NaiveDateTime` itself represents a leap second
 /// in which case the assumption becomes that **there is exactly a single leap second ever**.
@@ -1212,7 +1212,7 @@ impl AddAssign<OldDuration> for NaiveDateTime {
 /// A subtraction of `Duration` from `NaiveDateTime` yields another `NaiveDateTime`.
 /// It is same to the addition with a negated `Duration`.
 ///
-/// As a part of Chrono's [leap second handling](./struct.NaiveTime.html#leap-second-handling),
+/// As a part of Chrono's [leap second handling](./struct.Time.html#leap-second-handling),
 /// the addition assumes that **there is no leap second ever**,
 /// except when the `NaiveDateTime` itself represents a leap second
 /// in which case the assumption becomes that **there is exactly a single leap second ever**.
@@ -1282,7 +1282,7 @@ impl SubAssign<OldDuration> for NaiveDateTime {
 /// Subtracts another `NaiveDateTime` from the current date and time.
 /// This does not overflow or underflow at all.
 ///
-/// As a part of Chrono's [leap second handling](./struct.NaiveTime.html#leap-second-handling),
+/// As a part of Chrono's [leap second handling](./struct.Time.html#leap-second-handling),
 /// the subtraction assumes that **there is no leap second ever**,
 /// except when any of the `NaiveDateTime`s themselves represents a leap second
 /// in which case the assumption becomes that

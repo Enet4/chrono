@@ -321,7 +321,7 @@ which simply returns a naive local time described below.
 
 Chrono provides naive counterparts to `Date`, (non-existent) `Time` and `DateTime`
 as [**`NaiveDate`**](https://docs.rs/chrono/0.4.0/chrono/naive/struct.NaiveDate.html),
-[**`NaiveTime`**](https://docs.rs/chrono/0.4.0/chrono/naive/struct.NaiveTime.html) and
+[**`Time`**](https://docs.rs/chrono/0.4.0/chrono/time/struct.Time.html) and
 [**`NaiveDateTime`**](https://docs.rs/chrono/0.4.0/chrono/naive/struct.NaiveDateTime.html) respectively.
 
 They have almost equivalent interfaces as their timezone-aware twins,
@@ -343,7 +343,7 @@ Date types are limited in about +/- 262,000 years from the common epoch.
 Time types are limited in the nanosecond accuracy.
 
 [Leap seconds are supported in the representation but
-Chrono doesn't try to make use of them](https://docs.rs/chrono/0.4.0/chrono/naive/struct.NaiveTime.html#leap-second-handling).
+Chrono doesn't try to make use of them](https://docs.rs/chrono/0.4.0/chrono/time/struct.Time.html#leap-second-handling).
 (The main reason is that leap seconds are not really predictable.)
 Almost *every* operation over the possible leap seconds will ignore them.
 Consider using `NaiveDateTime` with the implicit TAI (International Atomic Time) scale

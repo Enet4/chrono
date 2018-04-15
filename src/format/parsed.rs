@@ -11,8 +11,8 @@ use {Datelike, Timelike};
 use Weekday;
 use div::div_rem;
 use offset::{TimeZone, Offset, LocalResult, FixedOffset};
-use naive::{NaiveDate, NaiveTime, NaiveDateTime};
-use DateTime;
+use naive::{NaiveDate, NaiveDateTime};
+use {DateTime, Time};
 use super::{ParseResult, OUT_OF_RANGE, IMPOSSIBLE, NOT_ENOUGH};
 
 /// Parsed parts of date and time. There are two classes of methods:
@@ -452,7 +452,7 @@ impl Parsed {
     /// - Hour, minute, second, nanosecond.
     ///
     /// It is able to handle leap seconds when given second is 60.
-    pub fn to_naive_time(&self) -> ParseResult<NaiveTime> {
+    pub fn to_naive_time(&self) -> ParseResult<Time> {
         let hour_div_12 = match self.hour_div_12 {
             Some(v @ 0...1) => v,
             Some(_) => return Err(OUT_OF_RANGE),
@@ -484,7 +484,7 @@ impl Parsed {
             None => 0,
         };
 
-        NaiveTime::from_hms_nano_opt(hour, minute, second, nano).ok_or(OUT_OF_RANGE)
+        Time::from_hms_nano_opt(hour, minute, second, nano).ok_or(OUT_OF_RANGE)
     }
 
     /// Returns a parsed naive date and time out of given fields,
@@ -638,9 +638,9 @@ impl Parsed {
 mod tests {
     use super::Parsed;
     use super::super::{OUT_OF_RANGE, IMPOSSIBLE, NOT_ENOUGH};
-    use Datelike;
+    use {Datelike, Time};
     use Weekday::*;
-    use naive::{MIN_DATE, MAX_DATE, NaiveDate, NaiveTime};
+    use naive::{MIN_DATE, MAX_DATE, NaiveDate};
     use offset::{TimeZone, Utc, FixedOffset};
 
     #[test]
@@ -871,8 +871,8 @@ mod tests {
             )
         }
 
-        let hms = |h,m,s| Ok(NaiveTime::from_hms(h, m, s));
-        let hmsn = |h,m,s,n| Ok(NaiveTime::from_hms_nano(h, m, s, n));
+        let hms = |h,m,s| Ok(Time::from_hms(h, m, s));
+        let hmsn = |h,m,s,n| Ok(Time::from_hms_nano(h, m, s, n));
 
         // omission of fields
         assert_eq!(parse!(), Err(NOT_ENOUGH));

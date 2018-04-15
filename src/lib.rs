@@ -345,7 +345,7 @@
 //!
 //! Chrono provides naive counterparts to `Date`, (non-existent) `Time` and `DateTime`
 //! as [**`NaiveDate`**](./naive/struct.NaiveDate.html),
-//! [**`NaiveTime`**](./naive/struct.NaiveTime.html) and
+//! [**`Time`**](./naive/struct.Time.html) and
 //! [**`NaiveDateTime`**](./naive/struct.NaiveDateTime.html) respectively.
 //!
 //! They have almost equivalent interfaces as their timezone-aware twins,
@@ -367,7 +367,7 @@
 //! Time types are limited in the nanosecond accuracy.
 //!
 //! [Leap seconds are supported in the representation but
-//! Chrono doesn't try to make use of them](./naive/struct.NaiveTime.html#leap-second-handling).
+//! Chrono doesn't try to make use of them](./naive/struct.Time.html#leap-second-handling).
 //! (The main reason is that leap seconds are not really predictable.)
 //! Almost *every* operation over the possible leap seconds will ignore them.
 //! Consider using `NaiveDateTime` with the implicit TAI (International Atomic Time) scale
@@ -411,7 +411,8 @@ pub use oldtime::Duration;
 #[cfg(feature="clock")]
 #[doc(no_inline)] pub use offset::Local;
 #[doc(no_inline)] pub use offset::{TimeZone, Offset, LocalResult, Utc, FixedOffset};
-#[doc(no_inline)] pub use naive::{NaiveDate, IsoWeek, NaiveTime, NaiveDateTime};
+#[doc(no_inline)] pub use naive::{NaiveDate, IsoWeek, NaiveDateTime};
+pub use time::Time;
 pub use date::{Date, MIN_DATE, MAX_DATE};
 pub use datetime::{DateTime, SecondsFormat};
 #[cfg(feature = "rustc-serialize")]
@@ -426,7 +427,7 @@ pub mod prelude {
     #[cfg(feature="clock")]
     #[doc(no_inline)] pub use Local;
     #[doc(no_inline)] pub use {Utc, FixedOffset};
-    #[doc(no_inline)] pub use {NaiveDate, NaiveTime, NaiveDateTime};
+    #[doc(no_inline)] pub use {NaiveDate, Time, NaiveDateTime};
     #[doc(no_inline)] pub use Date;
     #[doc(no_inline)] pub use {DateTime, SecondsFormat};
     #[doc(no_inline)] pub use SubsecRound;
@@ -451,17 +452,18 @@ pub mod naive {
     mod internals;
     mod date;
     mod isoweek;
-    mod time;
     mod datetime;
 
     pub use self::date::{NaiveDate, MIN_DATE, MAX_DATE};
     pub use self::isoweek::IsoWeek;
-    pub use self::time::NaiveTime;
     pub use self::datetime::NaiveDateTime;
     #[cfg(feature = "rustc-serialize")]
     #[allow(deprecated)]
     pub use self::datetime::rustc_serialize::TsSeconds;
 
+    /// Deprecated alias to `Time`
+    #[deprecated(note = "New code should use `Time`")]
+    pub type NaiveTime = ::Time;
 
     /// Serialization/Deserialization of naive types in alternate formats
     ///
@@ -478,6 +480,7 @@ pub mod naive {
 }
 mod date;
 mod datetime;
+mod time;
 pub mod format;
 mod round;
 
@@ -912,7 +915,7 @@ pub trait Timelike: Sized {
 
     /// Returns the number of nanoseconds since the whole non-leap second.
     /// The range from 1,000,000,000 to 1,999,999,999 represents
-    /// the [leap second](./naive/struct.NaiveTime.html#leap-second-handling).
+    /// the [leap second](./naive/struct.Time.html#leap-second-handling).
     fn nanosecond(&self) -> u32;
 
     /// Makes a new value with the hour number changed.

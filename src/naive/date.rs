@@ -8,9 +8,9 @@ use std::ops::{Add, Sub, AddAssign, SubAssign};
 use num_traits::ToPrimitive;
 use oldtime::Duration as OldDuration;
 
-use {Weekday, Datelike};
+use {Weekday, Datelike, Time};
 use div::div_mod_floor;
-use naive::{NaiveTime, NaiveDateTime, IsoWeek};
+use naive::{NaiveDateTime, IsoWeek};
 use format::{Item, Numeric, Pad};
 use format::{parse, Parsed, ParseError, ParseResult, DelayedFormat, StrftimeItems};
 
@@ -455,28 +455,28 @@ impl NaiveDate {
         parsed.to_naive_date()
     }
 
-    /// Makes a new `NaiveDateTime` from the current date and given `NaiveTime`.
+    /// Makes a new `NaiveDateTime` from the current date and given `Time`.
     ///
     /// # Example
     ///
     /// ~~~~
-    /// use chrono::{NaiveDate, NaiveTime, NaiveDateTime};
+    /// use chrono::{NaiveDate, Time, NaiveDateTime};
     ///
     /// let d = NaiveDate::from_ymd(2015, 6, 3);
-    /// let t = NaiveTime::from_hms_milli(12, 34, 56, 789);
+    /// let t = Time::from_hms_milli(12, 34, 56, 789);
     ///
     /// let dt: NaiveDateTime = d.and_time(t);
     /// assert_eq!(dt.date(), d);
     /// assert_eq!(dt.time(), t);
     /// ~~~~
     #[inline]
-    pub fn and_time(&self, time: NaiveTime) -> NaiveDateTime {
+    pub fn and_time(&self, time: Time) -> NaiveDateTime {
         NaiveDateTime::new(*self, time)
     }
 
     /// Makes a new `NaiveDateTime` from the current date, hour, minute and second.
     ///
-    /// No [leap second](./struct.NaiveTime.html#leap-second-handling) is allowed here;
+    /// No [leap second](./struct.Time.html#leap-second-handling) is allowed here;
     /// use `NaiveDate::and_hms_*` methods with a subsecond parameter instead.
     ///
     /// Panics on invalid hour, minute and/or second.
@@ -500,7 +500,7 @@ impl NaiveDate {
 
     /// Makes a new `NaiveDateTime` from the current date, hour, minute and second.
     ///
-    /// No [leap second](./struct.NaiveTime.html#leap-second-handling) is allowed here;
+    /// No [leap second](./struct.Time.html#leap-second-handling) is allowed here;
     /// use `NaiveDate::and_hms_*_opt` methods with a subsecond parameter instead.
     ///
     /// Returns `None` on invalid hour, minute and/or second.
@@ -518,13 +518,13 @@ impl NaiveDate {
     /// ~~~~
     #[inline]
     pub fn and_hms_opt(&self, hour: u32, min: u32, sec: u32) -> Option<NaiveDateTime> {
-        NaiveTime::from_hms_opt(hour, min, sec).map(|time| self.and_time(time))
+        Time::from_hms_opt(hour, min, sec).map(|time| self.and_time(time))
     }
 
     /// Makes a new `NaiveDateTime` from the current date, hour, minute, second and millisecond.
     ///
     /// The millisecond part can exceed 1,000
-    /// in order to represent the [leap second](./struct.NaiveTime.html#leap-second-handling).
+    /// in order to represent the [leap second](./struct.Time.html#leap-second-handling).
     ///
     /// Panics on invalid hour, minute, second and/or millisecond.
     ///
@@ -549,7 +549,7 @@ impl NaiveDate {
     /// Makes a new `NaiveDateTime` from the current date, hour, minute, second and millisecond.
     ///
     /// The millisecond part can exceed 1,000
-    /// in order to represent the [leap second](./struct.NaiveTime.html#leap-second-handling).
+    /// in order to represent the [leap second](./struct.Time.html#leap-second-handling).
     ///
     /// Returns `None` on invalid hour, minute, second and/or millisecond.
     ///
@@ -569,13 +569,13 @@ impl NaiveDate {
     #[inline]
     pub fn and_hms_milli_opt(&self, hour: u32, min: u32, sec: u32,
                              milli: u32) -> Option<NaiveDateTime> {
-        NaiveTime::from_hms_milli_opt(hour, min, sec, milli).map(|time| self.and_time(time))
+        Time::from_hms_milli_opt(hour, min, sec, milli).map(|time| self.and_time(time))
     }
 
     /// Makes a new `NaiveDateTime` from the current date, hour, minute, second and microsecond.
     ///
     /// The microsecond part can exceed 1,000,000
-    /// in order to represent the [leap second](./struct.NaiveTime.html#leap-second-handling).
+    /// in order to represent the [leap second](./struct.Time.html#leap-second-handling).
     ///
     /// Panics on invalid hour, minute, second and/or microsecond.
     ///
@@ -600,7 +600,7 @@ impl NaiveDate {
     /// Makes a new `NaiveDateTime` from the current date, hour, minute, second and microsecond.
     ///
     /// The microsecond part can exceed 1,000,000
-    /// in order to represent the [leap second](./struct.NaiveTime.html#leap-second-handling).
+    /// in order to represent the [leap second](./struct.Time.html#leap-second-handling).
     ///
     /// Returns `None` on invalid hour, minute, second and/or microsecond.
     ///
@@ -620,13 +620,13 @@ impl NaiveDate {
     #[inline]
     pub fn and_hms_micro_opt(&self, hour: u32, min: u32, sec: u32,
                              micro: u32) -> Option<NaiveDateTime> {
-        NaiveTime::from_hms_micro_opt(hour, min, sec, micro).map(|time| self.and_time(time))
+        Time::from_hms_micro_opt(hour, min, sec, micro).map(|time| self.and_time(time))
     }
 
     /// Makes a new `NaiveDateTime` from the current date, hour, minute, second and nanosecond.
     ///
     /// The nanosecond part can exceed 1,000,000,000
-    /// in order to represent the [leap second](./struct.NaiveTime.html#leap-second-handling).
+    /// in order to represent the [leap second](./struct.Time.html#leap-second-handling).
     ///
     /// Panics on invalid hour, minute, second and/or nanosecond.
     ///
@@ -651,7 +651,7 @@ impl NaiveDate {
     /// Makes a new `NaiveDateTime` from the current date, hour, minute, second and nanosecond.
     ///
     /// The nanosecond part can exceed 1,000,000,000
-    /// in order to represent the [leap second](./struct.NaiveTime.html#leap-second-handling).
+    /// in order to represent the [leap second](./struct.Time.html#leap-second-handling).
     ///
     /// Returns `None` on invalid hour, minute, second and/or nanosecond.
     ///
@@ -671,7 +671,7 @@ impl NaiveDate {
     #[inline]
     pub fn and_hms_nano_opt(&self, hour: u32, min: u32, sec: u32,
                             nano: u32) -> Option<NaiveDateTime> {
-        NaiveTime::from_hms_nano_opt(hour, min, sec, nano).map(|time| self.and_time(time))
+        Time::from_hms_nano_opt(hour, min, sec, nano).map(|time| self.and_time(time))
     }
 
     /// Returns the packed month-day-flags.
@@ -2021,7 +2021,7 @@ mod tests {
         assert_eq!(NaiveDate::from_ymd(-307,  3, 4).to_string(),  "-0307-03-04");
         assert_eq!(NaiveDate::from_ymd(12345, 3, 4).to_string(), "+12345-03-04");
 
-        // the format specifier should have no effect on `NaiveTime`
+        // the format specifier should have no effect on `Time`
         assert_eq!(format!("{:+30?}", NaiveDate::from_ymd(1234, 5, 6)), "1234-05-06");
         assert_eq!(format!("{:30?}", NaiveDate::from_ymd(12345, 6, 7)), "+12345-06-07");
     }

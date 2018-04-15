@@ -21,8 +21,8 @@
 use std::fmt;
 
 use Weekday;
-use naive::{NaiveDate, NaiveTime, NaiveDateTime};
-use {Date, DateTime};
+use naive::{NaiveDate, NaiveDateTime};
+use {Date, DateTime, Time};
 use format::{parse, Parsed, ParseResult, StrftimeItems};
 
 /// The conversion result from the local time to the timezone-aware datetime types.
@@ -65,12 +65,12 @@ impl<T> LocalResult<T> {
 }
 
 impl<Tz: TimeZone> LocalResult<Date<Tz>> {
-    /// Makes a new `DateTime` from the current date and given `NaiveTime`.
+    /// Makes a new `DateTime` from the current date and given `Time`.
     /// The offset in the current date is preserved.
     ///
     /// Propagates any error. Ambiguous result would be discarded.
     #[inline]
-    pub fn and_time(self, time: NaiveTime) -> LocalResult<DateTime<Tz>> {
+    pub fn and_time(self, time: Time) -> LocalResult<DateTime<Tz>> {
         match self {
             LocalResult::Single(d) => d.and_time(time)
                                        .map_or(LocalResult::None, LocalResult::Single),

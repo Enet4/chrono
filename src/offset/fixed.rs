@@ -9,8 +9,8 @@ use oldtime::Duration as OldDuration;
 
 use Timelike;
 use div::div_mod_floor;
-use naive::{NaiveTime, NaiveDate, NaiveDateTime};
-use DateTime;
+use naive::{NaiveDate, NaiveDateTime};
+use {DateTime, Time};
 use super::{TimeZone, Offset, LocalResult};
 
 /// The time zone with fixed offset, from UTC-23:59:59 to UTC+23:59:59.
@@ -148,20 +148,20 @@ fn add_with_leapsecond<T>(lhs: &T, rhs: i32) -> T
     (lhs + OldDuration::seconds(i64::from(rhs))).with_nanosecond(nanos).unwrap()
 }
 
-impl Add<FixedOffset> for NaiveTime {
-    type Output = NaiveTime;
+impl Add<FixedOffset> for Time {
+    type Output = Time;
 
     #[inline]
-    fn add(self, rhs: FixedOffset) -> NaiveTime {
+    fn add(self, rhs: FixedOffset) -> Time {
         add_with_leapsecond(&self, rhs.local_minus_utc)
     }
 }
 
-impl Sub<FixedOffset> for NaiveTime {
-    type Output = NaiveTime;
+impl Sub<FixedOffset> for Time {
+    type Output = Time;
 
     #[inline]
-    fn sub(self, rhs: FixedOffset) -> NaiveTime {
+    fn sub(self, rhs: FixedOffset) -> Time {
         add_with_leapsecond(&self, -rhs.local_minus_utc)
     }
 }

@@ -13,7 +13,8 @@ use {Weekday, Timelike, Datelike};
 #[cfg(feature="clock")]
 use offset::Local;
 use offset::{TimeZone, Offset, Utc, FixedOffset};
-use naive::{NaiveTime, NaiveDateTime, IsoWeek};
+use naive::{NaiveDateTime, IsoWeek};
+use time::Time;
 use Date;
 use format::{Item, Numeric, Pad, Fixed};
 use format::{parse, Parsed, ParseError, ParseResult, DelayedFormat, StrftimeItems};
@@ -88,7 +89,7 @@ impl<Tz: TimeZone> DateTime<Tz> {
     /// Retrieves a time component.
     /// Unlike `date`, this is not associated to the time zone.
     #[inline]
-    pub fn time(&self) -> NaiveTime {
+    pub fn time(&self) -> Time {
         self.datetime.time() + self.offset.fix()
     }
 
@@ -1086,8 +1087,8 @@ pub mod serde {
 mod tests {
     use super::DateTime;
     #[cfg(feature="clock")]
-    use Datelike;
-    use naive::{NaiveTime, NaiveDate};
+    use {Datelike, Time};
+    use naive::{NaiveDate};
     #[cfg(feature="clock")]
     use offset::Local;
     use offset::{TimeZone, Utc, FixedOffset};
@@ -1143,21 +1144,21 @@ mod tests {
     fn test_datetime_date_and_time() {
         let tz = FixedOffset::east(5*60*60);
         let d = tz.ymd(2014, 5, 6).and_hms(7, 8, 9);
-        assert_eq!(d.time(), NaiveTime::from_hms(7, 8, 9));
+        assert_eq!(d.time(), Time::from_hms(7, 8, 9));
         assert_eq!(d.date(), tz.ymd(2014, 5, 6));
         assert_eq!(d.date().naive_local(), NaiveDate::from_ymd(2014, 5, 6));
         assert_eq!(d.date().and_time(d.time()), Some(d));
 
         let tz = FixedOffset::east(4*60*60);
         let d = tz.ymd(2016, 5, 4).and_hms(3, 2, 1);
-        assert_eq!(d.time(), NaiveTime::from_hms(3, 2, 1));
+        assert_eq!(d.time(), Time::from_hms(3, 2, 1));
         assert_eq!(d.date(), tz.ymd(2016, 5, 4));
         assert_eq!(d.date().naive_local(), NaiveDate::from_ymd(2016, 5, 4));
         assert_eq!(d.date().and_time(d.time()), Some(d));
 
         let tz = FixedOffset::west(13*60*60);
         let d = tz.ymd(2017, 8, 9).and_hms(12, 34, 56);
-        assert_eq!(d.time(), NaiveTime::from_hms(12, 34, 56));
+        assert_eq!(d.time(), Time::from_hms(12, 34, 56));
         assert_eq!(d.date(), tz.ymd(2017, 8, 9));
         assert_eq!(d.date().naive_local(), NaiveDate::from_ymd(2017, 8, 9));
         assert_eq!(d.date().and_time(d.time()), Some(d));

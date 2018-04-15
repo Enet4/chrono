@@ -22,7 +22,8 @@ use std::error::Error;
 use {Datelike, Timelike, Weekday, ParseWeekdayError};
 use div::{div_floor, mod_floor};
 use offset::{Offset, FixedOffset};
-use naive::{NaiveDate, NaiveTime};
+use naive::NaiveDate;
+use time::Time;
 
 pub use self::strftime::StrftimeItems;
 pub use self::parsed::Parsed;
@@ -334,7 +335,7 @@ const BAD_FORMAT:   ParseError = ParseError(ParseErrorKind::BadFormat);
 
 /// Tries to format given arguments with given formatting items.
 /// Internally used by `DelayedFormat`.
-pub fn format<'a, I>(w: &mut fmt::Formatter, date: Option<&NaiveDate>, time: Option<&NaiveTime>,
+pub fn format<'a, I>(w: &mut fmt::Formatter, date: Option<&NaiveDate>, time: Option<&Time>,
                      off: Option<&(String, FixedOffset)>, items: I) -> fmt::Result
         where I: Iterator<Item=Item<'a>> {
     // full and abbreviated month and weekday names
@@ -544,7 +545,7 @@ pub struct DelayedFormat<I> {
     /// The date view, if any.
     date: Option<NaiveDate>,
     /// The time view, if any.
-    time: Option<NaiveTime>,
+    time: Option<Time>,
     /// The name and local-to-UTC difference for the offset (timezone), if any.
     off: Option<(String, FixedOffset)>,
     /// An iterator returning formatting items.
@@ -553,12 +554,12 @@ pub struct DelayedFormat<I> {
 
 impl<'a, I: Iterator<Item=Item<'a>> + Clone> DelayedFormat<I> {
     /// Makes a new `DelayedFormat` value out of local date and time.
-    pub fn new(date: Option<NaiveDate>, time: Option<NaiveTime>, items: I) -> DelayedFormat<I> {
+    pub fn new(date: Option<NaiveDate>, time: Option<Time>, items: I) -> DelayedFormat<I> {
         DelayedFormat { date: date, time: time, off: None, items: items }
     }
 
     /// Makes a new `DelayedFormat` value out of local date and time and UTC offset.
-    pub fn new_with_offset<Off>(date: Option<NaiveDate>, time: Option<NaiveTime>,
+    pub fn new_with_offset<Off>(date: Option<NaiveDate>, time: Option<Time>,
                                 offset: &Off, items: I) -> DelayedFormat<I>
             where Off: Offset + fmt::Display {
         let name_and_diff = (offset.to_string(), offset.fix());
